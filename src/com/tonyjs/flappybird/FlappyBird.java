@@ -29,7 +29,7 @@ public class FlappyBird extends Application {
     private int TOTAL_SCORE = 0;
     private long spaceClickA;
     private double motionTime, elapsedTime;
-    private boolean CLICKED, GAME_START, HIT_PIPE;
+    private boolean CLICKED, GAME_START, HIT_PIPE, GAME_OVER;
     private LongValue startNanoTime;
     private Sprite firstFloor, secondFloor, birdSprite;
     private Bird bird;
@@ -56,21 +56,27 @@ public class FlappyBird extends Application {
     private void setKeyFunctions(Scene scene) {
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.SPACE) {
-                if (HIT_PIPE) {
-                    e.consume();
-                } else {
-                    CLICKED = true;
-                    if (!GAME_START) {
-                        swoosh.playClip();
-                        GAME_START = true;
-                    } else {
-                        wing.playClip();
-                        spaceClickA = System.currentTimeMillis();
-                        birdSprite.setVelocity(0, -250);
-                    }
-                }
+                setOnUserInput();
             }
         });
+
+        scene.setOnMousePressed(e -> {
+            setOnUserInput();
+        });
+    }
+
+    public void setOnUserInput() {
+        if (!HIT_PIPE) {
+            CLICKED = true;
+            if (!GAME_START) {
+                swoosh.playClip();
+                GAME_START = true;
+            } else {
+                wing.playClip();
+                spaceClickA = System.currentTimeMillis();
+                birdSprite.setVelocity(0, -250);
+            }
+        }
     }
 
     public Parent getContent() {
@@ -103,7 +109,7 @@ public class FlappyBird extends Application {
 
     private void setLabel() {
         scoreLabel = new Text("0");
-        scoreLabel.setFont(Font.font("Times New Roman", FontWeight.EXTRA_BOLD, 50));
+        scoreLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 50));
         scoreLabel.setStroke(Color.BLACK);
         scoreLabel.setFill(Color.WHITE);
         scoreLabel.setLayoutX(20);
@@ -169,6 +175,7 @@ public class FlappyBird extends Application {
 
                     if (birdHitFloor()) {
                         timer.stop();
+                        GAME_OVER = true;
                         die.playClip();
                     }
                 }
@@ -194,8 +201,7 @@ public class FlappyBird extends Application {
         if (!HIT_PIPE) {
             for (Pipe pipe : pipes) {
                 if (pipe.getPipe().getPositionX() == birdSprite.getPositionX()) {
-                    TOTAL_SCORE++;
-                    updateScoreLabel();
+                    updateScoreLabel(++TOTAL_SCORE);
                     coin.playClip();
                     break;
                 }
@@ -203,8 +209,8 @@ public class FlappyBird extends Application {
         }
     }
 
-    private void updateScoreLabel() {
-        scoreLabel.setText(Integer.toString(TOTAL_SCORE));
+    private void updateScoreLabel(int score) {
+        scoreLabel.setText(Integer.toString(score));
     }
 
     private void moveFloor() {
