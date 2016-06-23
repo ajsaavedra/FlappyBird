@@ -37,6 +37,7 @@ public class FlappyBird extends Application {
     private GraphicsContext gc;
     private AnimationTimer timer;
     private ArrayList<Pipe> pipes;
+    private Sound coin, hit, wing, swoosh, die;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -60,8 +61,10 @@ public class FlappyBird extends Application {
                 } else {
                     CLICKED = true;
                     if (!GAME_START) {
+                        swoosh.playClip();
                         GAME_START = true;
                     } else {
+                        wing.playClip();
                         spaceClickA = System.currentTimeMillis();
                         birdSprite.setVelocity(0, -250);
                     }
@@ -81,13 +84,8 @@ public class FlappyBird extends Application {
 
         pipes = new ArrayList<>();
         setPipes();
-
-        scoreLabel = new Text("0");
-        scoreLabel.setFont(Font.font("Times New Roman", FontWeight.EXTRA_BOLD, 50));
-        scoreLabel.setStroke(Color.BLACK);
-        scoreLabel.setFill(Color.WHITE);
-        scoreLabel.setLayoutX(APP_WIDTH - 30);
-        scoreLabel.setLayoutY(40);
+        setLabel();
+        setSounds();
 
         root.getChildren().addAll(bg, canvas, scoreLabel);
         return root;
@@ -101,6 +99,23 @@ public class FlappyBird extends Application {
         imageView.setFitWidth(APP_WIDTH);
         imageView.setFitHeight(APP_HEIGHT);
         return imageView;
+    }
+
+    private void setLabel() {
+        scoreLabel = new Text("0");
+        scoreLabel.setFont(Font.font("Times New Roman", FontWeight.EXTRA_BOLD, 50));
+        scoreLabel.setStroke(Color.BLACK);
+        scoreLabel.setFill(Color.WHITE);
+        scoreLabel.setLayoutX(20);
+        scoreLabel.setLayoutY(40);
+    }
+
+    private void setSounds() {
+        coin = new Sound("/sounds/score.mp3");
+        hit = new Sound("/sounds/hit.mp3");
+        wing = new Sound("/sounds/wing.mp3");
+        swoosh = new Sound("/sounds/swoosh.mp3");
+        die = new Sound("/sounds/die.mp3");
     }
 
     private void setBird() {
@@ -142,6 +157,7 @@ public class FlappyBird extends Application {
 
                     if (birdHitPipe()) {
                         stopScroll();
+                        playHitSound();
                         motionTime += 0.18;
                         if (motionTime > 0.5) {
                             birdSprite.addVelocity(-300, 400);
@@ -153,6 +169,7 @@ public class FlappyBird extends Application {
 
                     if (birdHitFloor()) {
                         timer.stop();
+                        die.playClip();
                     }
                 }
             }
@@ -174,11 +191,14 @@ public class FlappyBird extends Application {
     }
 
     private void updateTotalScore() {
-        for (int i = 0; i < pipes.size(); i++) {
-            if (pipes.get(i).getPipe().getPositionX() == birdSprite.getPositionX()) {
-                TOTAL_SCORE++;
-                updateScoreLabel();
-                break;
+        if (!HIT_PIPE) {
+            for (Pipe pipe : pipes) {
+                if (pipe.getPipe().getPositionX() == birdSprite.getPositionX()) {
+                    TOTAL_SCORE++;
+                    updateScoreLabel();
+                    coin.playClip();
+                    break;
+                }
             }
         }
     }
@@ -217,12 +237,18 @@ public class FlappyBird extends Application {
 
     private boolean birdHitPipe() {
         for (Pipe pipe : pipes) {
-            if (birdSprite.intersectsSprite(pipe.getPipe())) {
+            if (!HIT_PIPE && birdSprite.intersectsSprite(pipe.getPipe())) {
                 HIT_PIPE = true;
                 return true;
             }
         }
         return false;
+    }
+
+    private void playHitSound() {
+        if (HIT_PIPE) {
+            hit.playClip();
+        }
     }
 
     private boolean birdHitFloor() {
