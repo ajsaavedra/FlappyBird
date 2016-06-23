@@ -10,7 +10,7 @@ public class Bird {
     private Sprite bird;
     private ArrayList<Sprite> flight = new ArrayList<>();
     private int currentBird = 0;
-    private double locationX = 100;
+    private double locationX = 70;
     private double locationY = 200;
     private int BIRD_WIDTH = 50;
     private int BIRD_HEIGHT = 45;

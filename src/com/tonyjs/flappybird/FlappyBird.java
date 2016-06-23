@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by tonysaavedra on 6/21/16.
@@ -41,6 +42,8 @@ public class FlappyBird extends Application {
         setKeyFunctions(main);
         primaryStage.setScene(main);
         primaryStage.show();
+
+        startGame();
     }
 
     private void setKeyFunctions(Scene scene) {
@@ -52,7 +55,6 @@ public class FlappyBird extends Application {
                     CLICKED = true;
                     if (!GAME_START) {
                         GAME_START = true;
-                        startGame();
                     } else {
                         spaceClickA = System.currentTimeMillis();
                         birdSprite.setVelocity(0, -250);
@@ -79,7 +81,10 @@ public class FlappyBird extends Application {
     }
 
     private ImageView setBackground() {
-        ImageView imageView = new ImageView(new Image(getClass().getResource("/images/background.png").toExternalForm()));
+        Random random = new Random();
+        int bg = random.nextInt(2);
+        String filePath = bg > 0 ? "/images/background.png" : "/images/background_night.png";
+        ImageView imageView = new ImageView(new Image(getClass().getResource(filePath).toExternalForm()));
         imageView.setFitWidth(APP_WIDTH);
         imageView.setFitHeight(APP_HEIGHT);
         return imageView;
@@ -116,22 +121,25 @@ public class FlappyBird extends Application {
                 gc.clearRect(0, 0, APP_WIDTH, APP_HEIGHT);
                 moveFloor();
                 checkTimeBetweenSpaceHits();
-                renderPipes();
-                checkPipeScroll();
 
-                if (birdHitPipe()) {
-                    stopScroll();
-                    motionTime += 0.18;
-                    if (motionTime > 0.5) {
-                        birdSprite.addVelocity(-300, 400);
-                        birdSprite.render(gc);
-                        birdSprite.update(elapsedTime);
-                        motionTime = 0;
+                if (GAME_START) {
+                    renderPipes();
+                    checkPipeScroll();
+
+                    if (birdHitPipe()) {
+                        stopScroll();
+                        motionTime += 0.18;
+                        if (motionTime > 0.5) {
+                            birdSprite.addVelocity(-300, 400);
+                            birdSprite.render(gc);
+                            birdSprite.update(elapsedTime);
+                            motionTime = 0;
+                        }
                     }
-                }
 
-                if (birdHitFloor()) {
-                    timer.stop();
+                    if (birdHitFloor()) {
+                        timer.stop();
+                    }
                 }
             }
         };
