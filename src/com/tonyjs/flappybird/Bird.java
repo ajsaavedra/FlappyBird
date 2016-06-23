@@ -36,10 +36,6 @@ public class Bird {
         flight.addAll(Arrays.asList(bird, bird2, bird3, bird4));
     }
 
-    public ArrayList<Sprite> getFlight() {
-        return flight;
-    }
-
     public Sprite getBird() {
         return bird;
     }
@@ -50,9 +46,5 @@ public class Bird {
         }
 
         return flight.get(currentBird++);
-    }
-
-    public Sprite stopAnimation() {
-        return flight.get(currentBird);
     }
 }
