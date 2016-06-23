@@ -38,6 +38,8 @@ public class FlappyBird extends Application {
     private AnimationTimer timer;
     private ArrayList<Pipe> pipes;
     private Sound coin, hit, wing, swoosh, die;
+    private ImageView gameOver, startGame;
+    private Group root;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -69,6 +71,7 @@ public class FlappyBird extends Application {
         if (!HIT_PIPE) {
             CLICKED = true;
             if (!GAME_START) {
+                root.getChildren().remove(startGame);
                 swoosh.playClip();
                 GAME_START = true;
             } else {
@@ -80,7 +83,7 @@ public class FlappyBird extends Application {
     }
 
     public Parent getContent() {
-        Group root = new Group();
+        root = new Group();
         Canvas canvas = new Canvas(APP_WIDTH, APP_HEIGHT);
         gc = canvas.getGraphicsContext2D();
 
@@ -90,10 +93,10 @@ public class FlappyBird extends Application {
 
         pipes = new ArrayList<>();
         setPipes();
-        setLabel();
+        setLabels();
         setSounds();
 
-        root.getChildren().addAll(bg, canvas, scoreLabel);
+        root.getChildren().addAll(bg, canvas, scoreLabel, startGame);
         return root;
     }
 
@@ -107,13 +110,25 @@ public class FlappyBird extends Application {
         return imageView;
     }
 
-    private void setLabel() {
+    private void setLabels() {
         scoreLabel = new Text("0");
         scoreLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 50));
         scoreLabel.setStroke(Color.BLACK);
         scoreLabel.setFill(Color.WHITE);
         scoreLabel.setLayoutX(20);
         scoreLabel.setLayoutY(40);
+
+        gameOver = new ImageView(new Image(getClass().getResource("/images/game_over.png").toExternalForm()));
+        gameOver.setFitWidth(178);
+        gameOver.setFitHeight(50);
+        gameOver.setLayoutX(110);
+        gameOver.setLayoutY(100);
+
+        startGame = new ImageView(new Image(getClass().getResource("/images/ready.png").toExternalForm()));
+        startGame.setFitWidth(178);
+        startGame.setFitHeight(50);
+        startGame.setLayoutX(100);
+        startGame.setLayoutY(100);
     }
 
     private void setSounds() {
@@ -162,6 +177,7 @@ public class FlappyBird extends Application {
                     updateTotalScore();
 
                     if (birdHitPipe()) {
+                        root.getChildren().add(gameOver);
                         stopScroll();
                         playHitSound();
                         motionTime += 0.18;
@@ -315,9 +331,5 @@ public class FlappyBird extends Application {
         public LongValue(long i) {
             this.value = i;
         }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
