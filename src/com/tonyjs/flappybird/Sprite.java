@@ -34,8 +34,8 @@ public class Sprite {
         setImage(i);
     }
 
-    public void resizeImage(String filepath) {
-        Image toReturn = new Image(filepath, 400, 140, true, false);
+    public void resizeImage(String filepath, int width, int height) {
+        Image toReturn = new Image(filepath, width, height, true, false);
         setImage(toReturn);
     }
 
@@ -56,9 +56,14 @@ public class Sprite {
         return positionY;
     }
 
-    public void setVelocityX(double velocityX, double velocityY) {
+    public void setVelocity(double velocityX, double velocityY) {
         this.velocityX = velocityX;
         this.velocityY = velocityY;
+    }
+
+    public void addVelocity(double x, double y) {
+        this.velocityX += x;
+        this.velocityY += y;
     }
 
     public double getVelocityX() {
