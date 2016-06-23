@@ -10,6 +10,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -22,12 +26,14 @@ import java.util.Random;
 public class FlappyBird extends Application {
     private int APP_HEIGHT = 700;
     private int APP_WIDTH = 400;
+    private int TOTAL_SCORE = 0;
     private long spaceClickA;
     private double motionTime, elapsedTime;
     private boolean CLICKED, GAME_START, HIT_PIPE;
     private LongValue startNanoTime;
     private Sprite firstFloor, secondFloor, birdSprite;
     private Bird bird;
+    private Text scoreLabel;
     private GraphicsContext gc;
     private AnimationTimer timer;
     private ArrayList<Pipe> pipes;
@@ -76,7 +82,14 @@ public class FlappyBird extends Application {
         pipes = new ArrayList<>();
         setPipes();
 
-        root.getChildren().addAll(bg, canvas);
+        scoreLabel = new Text("0");
+        scoreLabel.setFont(Font.font("Times New Roman", FontWeight.EXTRA_BOLD, 50));
+        scoreLabel.setStroke(Color.BLACK);
+        scoreLabel.setFill(Color.WHITE);
+        scoreLabel.setLayoutX(APP_WIDTH - 30);
+        scoreLabel.setLayoutY(40);
+
+        root.getChildren().addAll(bg, canvas, scoreLabel);
         return root;
     }
 
@@ -125,6 +138,7 @@ public class FlappyBird extends Application {
                 if (GAME_START) {
                     renderPipes();
                     checkPipeScroll();
+                    updateTotalScore();
 
                     if (birdHitPipe()) {
                         stopScroll();
@@ -157,6 +171,20 @@ public class FlappyBird extends Application {
         } else {
             animateBird();
         }
+    }
+
+    private void updateTotalScore() {
+        for (int i = 0; i < pipes.size(); i++) {
+            if (pipes.get(i).getPipe().getPositionX() == birdSprite.getPositionX()) {
+                TOTAL_SCORE++;
+                updateScoreLabel();
+                break;
+            }
+        }
+    }
+
+    private void updateScoreLabel() {
+        scoreLabel.setText(Integer.toString(TOTAL_SCORE));
     }
 
     private void moveFloor() {
