@@ -12,6 +12,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Created by tonysaavedra on 6/21/16.
  */
@@ -20,12 +23,13 @@ public class FlappyBird extends Application {
     private int APP_WIDTH = 400;
     private long spaceClickA;
     private double motionTime, elapsedTime;
-    private boolean CLICKED;
+    private boolean CLICKED, GAME_START, HIT_PIPE;
     private LongValue startNanoTime;
     private Sprite firstFloor, secondFloor, birdSprite;
     private Bird bird;
     private GraphicsContext gc;
     private AnimationTimer timer;
+    private ArrayList<Pipe> pipes;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -37,15 +41,23 @@ public class FlappyBird extends Application {
         setKeyFunctions(main);
         primaryStage.setScene(main);
         primaryStage.show();
-        startGame();
     }
 
     private void setKeyFunctions(Scene scene) {
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.SPACE) {
-                CLICKED = true;
-                spaceClickA = System.currentTimeMillis();
-                birdSprite.setVelocity(0, -250);
+                if (HIT_PIPE) {
+                    e.consume();
+                } else {
+                    CLICKED = true;
+                    if (!GAME_START) {
+                        GAME_START = true;
+                        startGame();
+                    } else {
+                        spaceClickA = System.currentTimeMillis();
+                        birdSprite.setVelocity(0, -250);
+                    }
+                }
             }
         });
     }
@@ -54,10 +66,14 @@ public class FlappyBird extends Application {
         Group root = new Group();
         Canvas canvas = new Canvas(APP_WIDTH, APP_HEIGHT);
         gc = canvas.getGraphicsContext2D();
+
         ImageView bg = setBackground();
         setFloor();
-        bird = new Bird();
-        birdSprite = bird.getBird();
+        setBird();
+
+        pipes = new ArrayList<>();
+        setPipes();
+
         root.getChildren().addAll(bg, canvas);
         return root;
     }
@@ -67,6 +83,12 @@ public class FlappyBird extends Application {
         imageView.setFitWidth(APP_WIDTH);
         imageView.setFitHeight(APP_HEIGHT);
         return imageView;
+    }
+
+    private void setBird() {
+        bird = new Bird();
+        birdSprite = bird.getBird();
+        birdSprite.render(gc);
     }
 
     private void setFloor() {
@@ -94,9 +116,21 @@ public class FlappyBird extends Application {
                 gc.clearRect(0, 0, APP_WIDTH, APP_HEIGHT);
                 moveFloor();
                 checkTimeBetweenSpaceHits();
+                renderPipes();
+                checkPipeScroll();
 
-                if (birdSprite.intersectsSprite(firstFloor) ||
-                        birdSprite.intersectsSprite(secondFloor)) {
+                if (birdHitPipe()) {
+                    stopScroll();
+                    motionTime += 0.18;
+                    if (motionTime > 0.5) {
+                        birdSprite.addVelocity(-300, 400);
+                        birdSprite.render(gc);
+                        birdSprite.update(elapsedTime);
+                        motionTime = 0;
+                    }
+                }
+
+                if (birdHitFloor()) {
                     timer.stop();
                 }
             }
@@ -142,6 +176,68 @@ public class FlappyBird extends Application {
             birdSprite.setPositionXY(temp.getPositionX(), temp.getPositionY());
             birdSprite.setVelocity(temp.getVelocityX(), temp.getVelocityY());
             motionTime = 0;
+        }
+    }
+
+    private boolean birdHitPipe() {
+        for (Pipe pipe : pipes) {
+            if (birdSprite.intersectsSprite(pipe.getPipe())) {
+                HIT_PIPE = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean birdHitFloor() {
+        return birdSprite.intersectsSprite(firstFloor) ||
+                birdSprite.intersectsSprite(secondFloor);
+    }
+
+    private void stopScroll() {
+        for (Pipe pipe : pipes) {
+            pipe.getPipe().setVelocity(0, 0);
+        }
+        firstFloor.setVelocity(0, 0);
+        secondFloor.setVelocity(0, 0);
+    }
+
+    private void checkPipeScroll() {
+        if (pipes.size() > 0) {
+            Sprite p = pipes.get(pipes.size() - 1).getPipe();
+            if (p.getPositionX() == APP_WIDTH / 2 - 80) {
+                setPipes();
+            } else if (p.getPositionX() <= -p.getWidth()) {
+                pipes.remove(0);
+                pipes.remove(0);
+            }
+        }
+    }
+
+    private void setPipes() {
+        int height = getRandomPipeHeight();
+
+        Pipe pipe = new Pipe(true, height);
+        Pipe downPipe = new Pipe(false, 425 - height);
+
+        pipe.getPipe().setVelocity(-.4, 0);
+        downPipe.getPipe().setVelocity(-.4, 0);
+
+        pipe.getPipe().render(gc);
+        downPipe.getPipe().render(gc);
+
+        pipes.addAll(Arrays.asList(pipe, downPipe));
+    }
+
+    private int getRandomPipeHeight() {
+        return (int) (Math.random() * (410 - 25)) + 25;
+    }
+
+    private void renderPipes() {
+        for (Pipe pipe : pipes) {
+            Sprite p = pipe.getPipe();
+            p.render(gc);
+            p.update(5);
         }
     }
 

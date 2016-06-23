@@ -29,18 +29,9 @@ public class Sprite {
         this.height = image.getHeight();
     }
 
-    public void setImage(String filepath) {
-        Image i = new Image(getClass().getResource(filepath).toExternalForm());
-        setImage(i);
-    }
-
     public void resizeImage(String filepath, int width, int height) {
-        Image toReturn = new Image(filepath, width, height, true, false);
+        Image toReturn = new Image(filepath, width, height, false, false);
         setImage(toReturn);
-    }
-
-    public Image getImage() {
-        return image;
     }
 
     public void setPositionXY(double positionX, double positionY) {
@@ -76,18 +67,6 @@ public class Sprite {
 
     public double getWidth() {
         return width;
-    }
-
-    public void setWidth(double width) {
-        this.width = width;
-    }
-
-    public double getHeight() {
-        return height;
-    }
-
-    public void setHeight(double height) {
-        this.height = height;
     }
 
     public void render(GraphicsContext gc) {
