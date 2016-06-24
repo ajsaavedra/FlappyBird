@@ -195,6 +195,11 @@ public class FlappyBird extends Application {
                     }
 
                     if (birdHitFloor()) {
+                        if (!root.getChildren().contains(gameOver)) {
+                            root.getChildren().add(gameOver);
+                            playHitSound();
+                            showHitEffect();
+                        }
                         timer.stop();
                         GAME_OVER = true;
                         die.playClip();
@@ -304,9 +309,7 @@ public class FlappyBird extends Application {
     }
 
     private void playHitSound() {
-        if (HIT_PIPE) {
-            hit.playClip();
-        }
+        hit.playClip();
     }
 
     private boolean birdHitFloor() {
