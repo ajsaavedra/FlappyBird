@@ -37,34 +37,39 @@ public class MainApp extends Application {
         Rectangle bg = new Rectangle(600, 300);
         bg.setFill(Color.rgb(78,192,202));
 
-        Text inst = new Text("Press the Space Bar to Start");
-        inst.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 30));
+        Text inst = new Text("Use the Space Bar or\nMouse Click to Start");
+        inst.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 25));
         inst.setFill(Color.WHITE);
         inst.setStroke(Color.BLACK);
-        inst.setLayoutX(50);
+        inst.setLayoutX(140);
         inst.setLayoutY(230);
 
         root.getChildren().addAll(bg, title, flappyBird, inst);
         return root;
     }
 
+    public void startGame() {
+        if (!GAME_SET) {
+            GAME_SET = true;
+            FlappyBird game = new FlappyBird();
+            Stage st = new Stage();
+            try {
+                game.start(st);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(createContent());
         scene.setOnKeyPressed(e -> {
-            if (!GAME_SET) {
-                GAME_SET = true;
-                FlappyBird game = new FlappyBird();
-                Stage st = new Stage();
-                try {
-                    game.start(st);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
+            startGame();
         });
-        scene.setFill(Color.BLACK);
+        scene.setOnMousePressed(e -> {
+            startGame();
+        });
         primaryStage.setTitle("Flappy Bird");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);

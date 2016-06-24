@@ -1,6 +1,8 @@
 package com.tonyjs.flappybird;
 
 import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -15,6 +17,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +70,7 @@ public class FlappyBird extends Application {
         });
     }
 
-    public void setOnUserInput() {
+    private void setOnUserInput() {
         if (!HIT_PIPE) {
             CLICKED = true;
             if (!GAME_START) {
@@ -80,19 +83,21 @@ public class FlappyBird extends Application {
                 birdSprite.setVelocity(0, -250);
             }
         }
+        if (GAME_OVER) {
+            startNewGame();
+        }
     }
 
-    public Parent getContent() {
+    private Parent getContent() {
         root = new Group();
         Canvas canvas = new Canvas(APP_WIDTH, APP_HEIGHT);
         gc = canvas.getGraphicsContext2D();
 
         ImageView bg = setBackground();
         setFloor();
-        setBird();
-
         pipes = new ArrayList<>();
         setPipes();
+        setBird();
         setLabels();
         setSounds();
 
@@ -182,7 +187,7 @@ public class FlappyBird extends Application {
                         playHitSound();
                         motionTime += 0.18;
                         if (motionTime > 0.5) {
-                            birdSprite.addVelocity(-300, 400);
+                            birdSprite.addVelocity(0, 400);
                             birdSprite.render(gc);
                             birdSprite.update(elapsedTime);
                             motionTime = 0;
@@ -198,6 +203,26 @@ public class FlappyBird extends Application {
             }
         };
         timer.start();
+    }
+
+    private void startNewGame() {
+        root.getChildren().remove(gameOver);
+        root.getChildren().add(startGame);
+        pipes.clear();
+        setFloor();
+        setPipes();
+        setBird();
+        resetVariables();
+        startGame();
+    }
+
+    private void resetVariables() {
+        updateScoreLabel(0);
+        TOTAL_SCORE = 0;
+        HIT_PIPE = false;
+        CLICKED = false;
+        GAME_OVER = false;
+        GAME_START = false;
     }
 
     private void checkTimeBetweenSpaceHits() {
@@ -261,10 +286,21 @@ public class FlappyBird extends Application {
         for (Pipe pipe : pipes) {
             if (!HIT_PIPE && birdSprite.intersectsSprite(pipe.getPipe())) {
                 HIT_PIPE = true;
+                showHitEffect();
                 return true;
             }
         }
         return false;
+    }
+
+    private void showHitEffect() {
+        ParallelTransition parallelTransition = new ParallelTransition();
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.10), root);
+        fadeTransition.setToValue(0);
+        fadeTransition.setCycleCount(2);
+        fadeTransition.setAutoReverse(true);
+        parallelTransition.getChildren().add(fadeTransition);
+        parallelTransition.play();
     }
 
     private void playHitSound() {
@@ -275,7 +311,8 @@ public class FlappyBird extends Application {
 
     private boolean birdHitFloor() {
         return birdSprite.intersectsSprite(firstFloor) ||
-                birdSprite.intersectsSprite(secondFloor);
+                birdSprite.intersectsSprite(secondFloor) ||
+                birdSprite.getPositionX() < 0;
     }
 
     private void stopScroll() {
