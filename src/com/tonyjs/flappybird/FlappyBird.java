@@ -37,7 +37,7 @@ public class FlappyBird extends Application {
     private Sprite firstFloor, secondFloor, birdSprite;
     private Bird bird;
     private Text scoreLabel;
-    private GraphicsContext gc;
+    private GraphicsContext gc, birdGC;
     private AnimationTimer timer;
     private ArrayList<Pipe> pipes;
     private Sound coin, hit, wing, swoosh, die;
@@ -91,7 +91,9 @@ public class FlappyBird extends Application {
     private Parent getContent() {
         root = new Group();
         Canvas canvas = new Canvas(APP_WIDTH, APP_HEIGHT);
+        Canvas birdCanvas = new Canvas(APP_WIDTH, APP_HEIGHT);
         gc = canvas.getGraphicsContext2D();
+        birdGC = birdCanvas.getGraphicsContext2D();
 
         ImageView bg = setBackground();
         setFloor();
@@ -101,7 +103,7 @@ public class FlappyBird extends Application {
         setLabels();
         setSounds();
 
-        root.getChildren().addAll(bg, canvas, scoreLabel, startGame);
+        root.getChildren().addAll(bg, canvas, birdCanvas, scoreLabel, startGame);
         return root;
     }
 
@@ -155,7 +157,7 @@ public class FlappyBird extends Application {
         firstFloor.resizeImage("/images/floor.png", 400, 140);
         firstFloor.setPositionXY(0, APP_HEIGHT - 100);
         firstFloor.setVelocity(-.4, 0);
-        firstFloor.render(gc);
+        firstFloor.render(birdGC);
 
         secondFloor = new Sprite();
         secondFloor.resizeImage("/images/floor.png", 400, 140);
@@ -173,6 +175,7 @@ public class FlappyBird extends Application {
                 startNanoTime.value = now;
 
                 gc.clearRect(0, 0, APP_WIDTH, APP_HEIGHT);
+                birdGC.clearRect(0, 0, APP_WIDTH, APP_HEIGHT);
                 moveFloor();
                 checkTimeBetweenSpaceHits();
 
@@ -187,7 +190,7 @@ public class FlappyBird extends Application {
                         playHitSound();
                         motionTime += 0.18;
                         if (motionTime > 0.5) {
-                            birdSprite.addVelocity(0, 400);
+                            birdSprite.addVelocity(-200, 400);
                             birdSprite.render(gc);
                             birdSprite.update(elapsedTime);
                             motionTime = 0;
@@ -236,7 +239,7 @@ public class FlappyBird extends Application {
         if (difference >= .001 && CLICKED) {
             CLICKED = false;
             birdSprite.addVelocity(0, 800);
-            birdSprite.render(gc);
+            birdSprite.render(birdGC);
             birdSprite.update(elapsedTime);
         } else {
             animateBird();
@@ -274,7 +277,7 @@ public class FlappyBird extends Application {
     }
 
     private void animateBird() {
-        birdSprite.render(gc);
+        birdSprite.render(birdGC);
         birdSprite.update(elapsedTime);
 
         motionTime += 0.18;
